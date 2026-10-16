@@ -29,7 +29,8 @@ Repository changes are recorded here as they are made. Entries describe source a
 
 - `vite build` passed after the availability changes.
 - Pushed source changes through commit `1b23320` to `codex/platform-flow-integrations` on GitHub. This did not deploy the live site.
-- The user asked to push the changes live. The connected Vercel project deploys production from `main`; the feature branch is prepared for promotion. Record the deployment result here after Vercel reports it.
+- Pushed the verified branch to Vercel's `main` production branch as commit `72386ce`; Vercel created a Git-based production deployment and reported **Ready** for both production domains.
+- Updated this handoff and changelog with the confirmed production deployment status.
 
 ### Earlier project work (historical summary)
 
