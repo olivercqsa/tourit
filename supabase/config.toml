@@ -1,0 +1,2 @@
+[functions.purge-expired-jobs]
+verify_jwt = false
