@@ -2,20 +2,22 @@
 
 ## Current integration state
 
-The workspace now contains a Vite frontend in `src/` using the Tourit CSS,
-Supabase Auth, live talent/job reads, profile/job editing, applications, saved
-jobs, shortlists, direct messaging and job/profile image uploads. Database
-notifications are generated but not yet shown in the UI.
+The workspace contains a Vite frontend in `src/` using Supabase Auth, live
+talent/job reads, profile/job editing, applications with private attachments,
+saved jobs, shortlists, direct messaging, notifications and availability.
 The URL and publishable key are loaded from `.env.local`. The original Downloads
 HTML remains untouched. The web app is not deployed, and domain DNS has not been
 changed.
 
-The current UI is an implementation slice, not a launch-ready replacement for
-every demo screen: About, Contact, legal pages, the editable availability
-calendar, private application attachments, notification display and realtime
-inbox updates remain to be completed. Messaging refreshes when you open or
-revisit the inbox. You confirmed migrations 003 and 004 were run; read-only API
-checks now confirm their tables and public media buckets are present.
+The UI is an implementation slice and still needs separate talent/host account
+acceptance testing before public signups. Read-only checks confirm the live
+project has the core schema, RLS, storage buckets and cleanup function. The
+Supabase migration registry is empty, which is consistent with applying SQL
+through the dashboard; no migrations were run during this check. The live
+Realtime publication does not include inbox/notification tables. Migration
+`202610160008_realtime_and_security.sql` is prepared locally and must be
+reviewed and applied once as a new migration before Realtime events are enabled.
+Inbox polling remains available until then.
 
 ## Manual step: install and start the local app
 
@@ -58,9 +60,10 @@ Supabase URL and publishable key. Do not add a secret/service-role key.
    The table checks and public organisation policy should be `true`. If the
    signup trigger is `false`, pause before accepting registrations and let me
    know; do not rerun migration 001 because its tables are already present.
-4. Migrations 003 and 004 have now been run. Read-only checks returned HTTP 200
-   for `jobs`, `talent_availability`, and object listing in the public avatar
-   and job-cover buckets. Private tables correctly deny anonymous access.
+4. Read-only checks confirm `jobs`, `talent_availability`, messaging and
+   notification tables and the public avatar/job-cover buckets exist. Private
+   application Storage policies are present. The migration registry does not
+   identify how these objects were installed, so do not rerun old migrations.
 
 ## Domain connection
 
@@ -94,8 +97,14 @@ management will require a separate restricted workflow.
 ## Manual step: authentication and hosting settings
 
 - Enable email/password authentication and email confirmation.
-- Add the exact app origins to Authentication > URL Configuration. OAuth
-  returns to the current site origin and Supabase JS processes the callback.
+- Set `VITE_AUTH_REDIRECT_URL` to the deployed site's root URL in the hosting
+  environment. Set the same production URL as Supabase Auth's **Site URL** and
+  allow the production, staging and local origins in **Redirect URLs**. Do not
+  use `localhost` as the production Site URL. Confirmation links should use
+  Supabase's `{{ .ConfirmationURL }}` template variable so the app's requested
+  callback URL is preserved. Supabase JS processes the confirmation callback;
+  Tourit uses a `tourit_auth=signup` marker to show the confirmation popup even
+  when the link opens in another browser session.
 - Configure a production SMTP provider before opening signups to the public.
 - Choose the website host and domain. DNS and email-domain verification need
   access to your hosting/domain accounts.
@@ -107,11 +116,9 @@ The app uses Supabase provider IDs `google`, `azure` (Microsoft), `x`
 credentials. Store provider secrets in Supabase Auth settings, never in
 `.env.local` or browser code.
 
-1. Run `supabase/migrations/202610150005_oauth_onboarding.sql` in Supabase SQL
-   Editor after migrations 001-004. It keeps new social accounts private until
-   their owner chooses an account type, then completes setup through a
-   restricted database function. Do not enable social signup before applying it.
-2. In **Authentication > URL Configuration**, keep the production site as the
+1. The live `complete_oauth_onboarding` function exists. Social buttons remain
+   disabled in the app until providers are configured; do not rerun migration
+   005. In **Authentication > URL Configuration**, keep the production site as the
    Site URL and add `http://localhost:5173/` plus the current Vercel URL to
    **Redirect URLs**. Add the custom domain there after DNS is connected.
 3. In **Authentication > Providers**, enable each provider and enter its client
@@ -237,12 +244,9 @@ Storage files with SQL.
 
 ## Remaining work
 
-1. Finish remaining demo screens, calendar, private application attachments,
-   live message refresh and notification display.
-2. Add local, Vercel and eventual custom-domain URLs to Supabase Auth redirects;
-   configure production SMTP and apply migration 005 before enabling OAuth.
-3. Test with separate talent and recruiter accounts before making signups public.
-4. Once you provide the domain and choose a host, add the production URL to
+1. Complete separate talent and host acceptance tests before public signups.
+2. Configure production SMTP and provider credentials before enabling OAuth.
+3. Once you provide the domain and choose a host, add the production URL to
    Supabase Auth redirects and configure the host's DNS records. No domain
    changes are needed until deployment is selected.
 
@@ -250,4 +254,5 @@ The Auth settings endpoint is reachable with the supplied project URL and
 publishable key. The latest read-only REST check returned HTTP 200 for
 `profiles`, `talent_profiles`, and `organisations`; anonymous access to
 `organisation_members` returned HTTP 401 as intended. Read-only checks also
-confirm the tables and public bucket listings added in migrations 003 and 004.
+confirm the tables and public bucket listings associated with migrations 003
+and 004.
