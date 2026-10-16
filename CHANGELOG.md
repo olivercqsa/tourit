@@ -11,8 +11,8 @@ Repository changes are recorded here as they are made. Entries describe source a
 - Added a required username setup screen for existing talent accounts that have no username; it blocks normal app navigation until one is saved.
 - Displayed usernames alongside published talent names and normalized signup/sign-in email input. Supabase Auth remains the authority preventing duplicate email accounts.
 - Applied `supabase/migrations/20261016182953_account_usernames.sql` to the connected Supabase project. Verified the username column, format constraint, unique index, authenticated update grant, account trigger, and three-argument OAuth onboarding function.
-- Applied `supabase/migrations/20261016183051_legacy_signup_username_compat.sql` so the current live signup page can continue creating accounts during rollout. Once the frontend change is deployed, talent accounts created without usernames will be required to choose one at sign-in.
-- User approved publishing the frontend and migration files to `main` on 2026-10-16.
+- Applied `supabase/migrations/20261016183051_legacy_signup_username_compat.sql` so older signup submissions remain compatible; talent accounts created without usernames are routed to the required username setup on sign-in.
+- Published the frontend to `main` as commit `95c0d4d`; Vercel reported the production deployment **Ready** for `cooperqsa.com` on 2026-10-16.
 
 ### Availability calendar polish
 
