@@ -352,3 +352,28 @@ nav a.find-talent-nav:hover,nav a.find-talent-nav:focus-visible{box-shadow:0 5px
 @keyframes cookieEnter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:620px){#cookie-consent{left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px))}.cookie-banner{align-items:stretch;flex-direction:column;gap:10px;padding:13px}.cookie-actions{justify-content:flex-end}.cookie-actions .btn{flex:1}}
 @media(prefers-reduced-motion:reduce){.cookie-banner{animation:none}}
+
+/* Keep mobile navigation tucked away until the menu button is opened. */
+.mobile-nav-toggle{display:none}
+.mobile-nav-menu{display:contents}
+@media(max-width:640px) and (hover:none) and (pointer:coarse){
+  nav{flex-wrap:nowrap;gap:10px;padding:9px 14px}
+  nav .logo{margin-right:auto}
+  .mobile-nav-toggle{position:relative;z-index:2;display:flex;width:44px;height:44px;flex:none;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:0;border:1px solid #ffffff24;border-radius:11px;background:linear-gradient(145deg,#222226,#151518);color:var(--tx);cursor:pointer;transition:border-color .2s ease,background .2s ease,transform .2s ease}
+  .mobile-nav-toggle::before,.mobile-nav-toggle::after{display:none}
+  .mobile-nav-toggle:hover,.mobile-nav-toggle:focus-visible{border-color:#f5e00088;background:#25251d;outline:none}
+  .mobile-nav-toggle:active{transform:scale(.95)}
+  .mobile-nav-toggle span{display:block;width:18px;height:2px;border-radius:2px;background:var(--y);transition:transform .22s ease,opacity .16s ease}
+  nav.menu-open .mobile-nav-toggle span:first-child{transform:translateY(7px) rotate(45deg)}
+  nav.menu-open .mobile-nav-toggle span:nth-child(2){opacity:0}
+  nav.menu-open .mobile-nav-toggle span:last-child{transform:translateY(-7px) rotate(-45deg)}
+  nav .mobile-nav-menu{position:absolute;top:calc(100% + 8px);right:12px;display:flex;width:min(280px,calc(100vw - 24px));flex-direction:column;align-items:stretch;gap:4px;padding:9px;border:1px solid #ffffff20;border-radius:14px;background:linear-gradient(155deg,#222226f7,#141417f7 80%);box-shadow:0 18px 48px #000b,0 0 24px #f5e0000a;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-9px) scale(.97);transform-origin:top right;transition:opacity .16s ease,transform .22s cubic-bezier(.2,.8,.2,1),visibility 0s .22s}
+  nav.menu-open .mobile-nav-menu{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0) scale(1);animation:mobileNavPop .25s cubic-bezier(.2,.8,.2,1) both;transition:opacity .16s ease,transform .22s cubic-bezier(.2,.8,.2,1),visibility 0s}
+  nav .mobile-nav-menu>a.l,nav .mobile-nav-menu>button.btn{display:flex;align-items:center;min-height:42px;padding:9px 12px;border-radius:9px;color:var(--tx);font-size:15px;text-align:left}
+  nav .mobile-nav-menu>a.l:hover,nav .mobile-nav-menu>a.l:focus-visible{background:#ffffff0b}
+  nav .mobile-nav-menu .header-auth{display:flex;flex-direction:column;align-items:stretch;gap:5px;margin:0;padding-bottom:5px;border-bottom:1px solid #ffffff14}
+  nav .mobile-nav-menu .header-auth .btn{display:flex;align-items:center;justify-content:flex-start;min-height:42px;padding:8px 12px;font-size:14px}
+  nav .mobile-nav-menu .header-auth .btn.p{color:var(--yt)}
+}
+@keyframes mobileNavPop{0%{opacity:0;transform:translateY(-9px) scale(.97)}70%{opacity:1;transform:translateY(1px) scale(1.005)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.mobile-nav-toggle,.mobile-nav-toggle span,nav .mobile-nav-menu{transition:none}nav.menu-open .mobile-nav-menu{animation:none;opacity:1;transform:none}}

@@ -4,6 +4,13 @@ Repository changes are recorded here as they are made. Entries describe source a
 
 ## 2026-10-16
 
+### Mobile navigation
+
+- Replaced the crowded mobile header links with a menu icon that opens the existing navigation options in an animated popout.
+- Added close-on-navigation, outside-click, and Escape-key behavior; the desktop header keeps its full navigation.
+- Respects reduced-motion preferences.
+- Limited the compact header to touch-first, non-hover devices so narrow desktop browser panels continue to use the full navigation.
+
 ### Account username validation
 
 - Added a unique, lowercase account username for signup; talent on-air names remain separate display nicknames.

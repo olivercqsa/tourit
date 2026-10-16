@@ -126,7 +126,8 @@ function shell(body) {
   const leavingTalent = !isTalentBrowse && lastShellWasTalent && lastShellRoute !== null && route !== lastShellRoute;
   const logoMotion = arrivingOnTalent ? ' cyan-arrival' : leavingTalent ? ' yellow-return' : '';
   const authActions = session ? `<a class="l" href="#/dash">Dashboard</a><a class="l" href="#/inbox">Inbox</a><a class="l" href="#/notifications">Notifications</a><button class="btn s" data-action="logout">Log out</button>` : `<span class="header-auth"><a class="btn s" href="#/login">Log in</a><a class="btn p s" href="#/login?signup=1">Sign up</a></span>`;
-  const links = `<nav class="${session?'signed-in':'signed-out'}"><a class="logo" href="#/" aria-label="Tourit home"><span class="logo-mark${logoMotion}" aria-hidden="true"><img src="${isTalentBrowse?'/tourit-app-icon-cyan.png':'/tourit-app-icon-4k.png'}" alt=""></span><span class="logo-word">TOUR<span>IT</span></span></a>${session?'':authActions}<a class="l" href="#/jobs">Find Jobs</a><a class="l find-talent-nav" href="#/talent">Find Talent</a><a class="l" href="#/promise">Our Promise</a><a class="l" href="#/community">Community</a>${session?authActions:''}</nav>`;
+  const menuItems = `${session?'':authActions}<a class="l" href="#/jobs">Find Jobs</a><a class="l find-talent-nav" href="#/talent">Find Talent</a><a class="l" href="#/promise">Our Promise</a><a class="l" href="#/community">Community</a>${session?authActions:''}`;
+  const links = `<nav class="${session?'signed-in':'signed-out'}"><a class="logo" href="#/" aria-label="Tourit home"><span class="logo-mark${logoMotion}" aria-hidden="true"><img src="${isTalentBrowse?'/tourit-app-icon-cyan.png':'/tourit-app-icon-4k.png'}" alt=""></span><span class="logo-word">TOUR<span>IT</span></span></a><button class="mobile-nav-toggle" type="button" data-action="toggle-mobile-menu" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-nav-menu"><span></span><span></span><span></span></button><div class="mobile-nav-menu" id="mobile-nav-menu">${menuItems}</div></nav>`;
   const pageTransition = lastShellRoute !== null && route !== lastShellRoute ? ' class="page-enter"' : '';
   lastShellRoute = route;
   lastShellWasTalent = isTalentBrowse;
@@ -692,9 +693,12 @@ document.addEventListener('keydown',event=>{
   }
 });
 document.addEventListener('click',async event=>{
-  const button=event.target.closest('[data-action]'); if(!button){document.querySelectorAll('.talent-dropdown.open').forEach(item=>{item.classList.remove('open');item.querySelector('.talent-dropdown-trigger')?.setAttribute('aria-expanded','false');});return;}
+  const button=event.target.closest('[data-action]');
+  if(event.target.closest('nav a')||!event.target.closest('nav')) document.querySelectorAll('nav.menu-open').forEach(nav=>{nav.classList.remove('menu-open');const toggle=nav.querySelector('.mobile-nav-toggle');toggle?.setAttribute('aria-expanded','false');toggle?.setAttribute('aria-label','Open navigation menu');});
+  if(!button){document.querySelectorAll('.talent-dropdown.open').forEach(item=>{item.classList.remove('open');item.querySelector('.talent-dropdown-trigger')?.setAttribute('aria-expanded','false');});return;}
   const {action,id}=button.dataset;
   try {
+    if(action==='toggle-mobile-menu'){const nav=button.closest('nav'),open=button.getAttribute('aria-expanded')!=='true';nav.classList.toggle('menu-open',open);button.setAttribute('aria-expanded',String(open));button.setAttribute('aria-label',open?'Close navigation menu':'Open navigation menu');return;}
     if(action==='toggle-talent-filter'){
       const dropdown=button.closest('.talent-dropdown');const willOpen=!dropdown.classList.contains('open');
       document.querySelectorAll('.talent-dropdown.open').forEach(item=>{item.classList.remove('open');item.querySelector('.talent-dropdown-trigger')?.setAttribute('aria-expanded','false');});
@@ -755,7 +759,7 @@ document.addEventListener('click',async event=>{
     if(action==='message'){go(`inbox?to=${encodeURIComponent(id)}`);}
   } catch(error){toast(error.message);}
 });
-document.addEventListener('keydown',event=>{if(event.key==='Escape'&&toastEl.querySelector('.confirmation-popup'))toastEl.replaceChildren();if(event.key==='Escape'&&pendingCoverCrop)closeCoverCropper();});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&toastEl.querySelector('.confirmation-popup'))toastEl.replaceChildren();if(event.key==='Escape'&&pendingCoverCrop)closeCoverCropper();if(event.key==='Escape'){document.querySelectorAll('nav.menu-open').forEach(nav=>{nav.classList.remove('menu-open');const toggle=nav.querySelector('.mobile-nav-toggle');toggle?.setAttribute('aria-expanded','false');toggle?.setAttribute('aria-label','Open navigation menu');toggle?.focus();});}});
 async function updateStatus(id,status){try{const {error}=await supabase.from('applications').update({status}).eq('id',id);if(error)throw error;toast('Application status updated');}catch(error){toast(error.message);await render();}}
 async function refreshSession() {
   const {data:{session:current}} = await supabase.auth.getSession();
