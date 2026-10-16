@@ -4,6 +4,16 @@ Repository changes are recorded here as they are made. Entries describe source a
 
 ## 2026-10-16
 
+### Account username validation
+
+- Added a unique, lowercase account username for signup; talent on-air names remain separate display nicknames.
+- Added a database uniqueness index and username format validation, with matching checks in signup and OAuth onboarding.
+- Added a required username setup screen for existing talent accounts that have no username; it blocks normal app navigation until one is saved.
+- Displayed usernames alongside published talent names and normalized signup/sign-in email input. Supabase Auth remains the authority preventing duplicate email accounts.
+- Applied `supabase/migrations/20261016182953_account_usernames.sql` to the connected Supabase project. Verified the username column, format constraint, unique index, authenticated update grant, account trigger, and three-argument OAuth onboarding function.
+- Applied `supabase/migrations/20261016183051_legacy_signup_username_compat.sql` so the current live signup page can continue creating accounts during rollout. Once the frontend change is deployed, talent accounts created without usernames will be required to choose one at sign-in.
+- User approved publishing the frontend and migration files to `main` on 2026-10-16.
+
 ### Availability calendar polish
 
 - Softened the availability markers and date styling; explicit unavailable dates now use a muted gray treatment without a shadow pulse.

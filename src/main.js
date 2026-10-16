@@ -18,6 +18,13 @@ const socialSignInEnabled = false;
 const onAirNamePattern = '^[A-Za-z0-9](?:[A-Za-z0-9 ._-]{0,14}[A-Za-z0-9])?$';
 const onAirNameRegex = new RegExp(onAirNamePattern);
 const onAirNameHelp = '1–16 characters. Use letters, numbers, spaces, hyphens, underscores or periods; start and end with a letter or number.';
+const usernamePattern = '^[a-z0-9](?:[a-z0-9_]{1,22}[a-z0-9])?$';
+const usernameRegex = new RegExp(usernamePattern);
+const usernameHelp = '3–24 characters. Use lowercase letters, numbers and underscores; start and end with a letter or number.';
+const normalizedUsername = value => String(value ?? '').trim().toLowerCase();
+const authErrorMessage = error => error?.code === '23505' || /profiles_username_unique_idx|username.*already (?:exists|taken|in use)|duplicate key.*username/i.test(error?.message || '')
+  ? 'That username is already in use. Choose another one.'
+  : error?.message || 'Something went wrong. Please try again.';
 const signupIntentIsFresh = () => {
   try { const started=Number(localStorage.getItem(signupIntentKey)); return started>0 && Date.now()-started<24*60*60*1000; }
   catch { return false; }
@@ -105,7 +112,11 @@ function oauthOnboardingPage() {
   const suggestedName=profile?.display_name||metadata.full_name||metadata.name||metadata.preferred_username||'';
   const suggestedType=sessionStorage.getItem('tourit-oauth-account-type')||'';
   const isTalent=suggestedType==='talent';
-  return `<section class="card oauth-onboarding"><span class="num">ONE LAST STEP</span><h1>Set up your Tourit account.</h1><p class="mu">Choose how you’ll use Tourit. This determines which account tools are available.</p><form id="oauth-onboarding-form"><label>Account type</label><select name="account_type" required><option value="" ${suggestedType?'':'selected'} disabled>Choose an account type</option><option value="talent" ${isTalent?'selected':''}>Talent — find roles and apply</option><option value="host" ${suggestedType==='host'?'selected':''}>Host — recruit talent and post jobs</option></select><label for="oauth-display-name">${isTalent?'On-air name':'Display name'}</label><input id="oauth-display-name" name="display_name" value="${esc(suggestedName)}" maxlength="${isTalent?16:100}" ${isTalent?`pattern="${onAirNamePattern}" aria-describedby="on-air-name-help"`:''} required autocomplete="name"><p id="on-air-name-help" class="mu" ${isTalent?'':'hidden'}>${onAirNameHelp}</p><div id="form-error"></div><button class="btn p" type="submit">Finish account setup</button></form></section>`;
+  return `<section class="card oauth-onboarding"><span class="num">ONE LAST STEP</span><h1>Set up your Tourit account.</h1><p class="mu">Choose how you’ll use Tourit. This determines which account tools are available.</p><form id="oauth-onboarding-form"><label>Account type</label><select name="account_type" required><option value="" ${suggestedType?'':'selected'} disabled>Choose an account type</option><option value="talent" ${isTalent?'selected':''}>Talent — find roles and apply</option><option value="host" ${suggestedType==='host'?'selected':''}>Host — recruit talent and post jobs</option></select><label for="oauth-username">Username</label><input id="oauth-username" name="username" minlength="3" maxlength="24" pattern="${usernamePattern}" aria-describedby="username-help" required autocomplete="username"><p id="username-help" class="mu">${usernameHelp} Usernames are unique.</p><label for="oauth-display-name">${isTalent?'On-air name':'Display name'}</label><input id="oauth-display-name" name="display_name" value="${esc(suggestedName)}" maxlength="${isTalent?16:100}" ${isTalent?`pattern="${onAirNamePattern}" aria-describedby="on-air-name-help"`:''} required autocomplete="name"><p id="on-air-name-help" class="mu" ${isTalent?'':'hidden'}>${onAirNameHelp}</p><div id="form-error"></div><button class="btn p" type="submit">Finish account setup</button></form></section>`;
+}
+
+function usernameSetupPage() {
+  return `<section class="card oauth-onboarding username-setup"><span class="num">ACCOUNT UPDATE REQUIRED</span><h1>Choose your username.</h1><p class="mu">Your on-air name stays ${esc(profile?.display_name || 'your nickname')}. Add a unique username for your Tourit account to continue.</p><form id="username-setup-form"><label for="required-username">Username</label><input id="required-username" name="username" minlength="3" maxlength="24" pattern="${usernamePattern}" aria-describedby="username-help" required autocomplete="username" autofocus><p id="username-help" class="mu">${usernameHelp} Usernames are unique.</p><div id="form-error"></div><button class="btn p" type="submit">Save username and continue</button></form></section>`;
 }
 
 function shell(body) {
@@ -320,7 +331,7 @@ function legalPage() {
 
 function authPage(signup, type = '') {
   if (signup && !type) return `<section class="signup-choice"><span class="num">YOUR NEXT PLAY STARTS HERE</span><h1>Choose your lane.</h1><p class="mu">Join the people bringing esports broadcasts to life. Set up the account that fits what you do.</p><div class="pick lg signup-pick"><a class="pk t" href="#/login?signup=1&amp;type=talent"><span class="num">CASTERS · HOSTS · ANALYSTS</span><h2>Build your talent profile.</h2><span class="mu">Showcase your on-air style, find opportunities and apply to casting calls.</span><span class="btn p">Join as talent <span aria-hidden="true">→</span></span></a><a class="pk c" href="#/login?signup=1&amp;type=host"><span class="num">ORGANISERS · PRODUCERS · TEAMS</span><h2>Build your broadcast team.</h2><span class="mu">Create your organisation profile, post roles and connect with broadcast talent.</span><span class="btn p">Join as a host <span aria-hidden="true">→</span></span></a></div><p class="signup-existing">Already have an account? <a href="#/login">Log in</a></p></section>`;
-  return `<section class="card auth-card"><h2>${signup ? `Register as ${type}` : 'Log in'}</h2><div class="auth-email-label">${signup?'Register with email':'Use your email and password'}</div><form id="auth-form">${signup ? `<label for="signup-display-name">${type === 'host' ? 'Organisation name' : 'On-air name'}</label><input id="signup-display-name" name="display_name" required maxlength="${type==='talent'?16:100}" ${type==='talent'?`pattern="${onAirNamePattern}" aria-describedby="on-air-name-help"`:''} autocomplete="name">${type==='talent'?`<p id="on-air-name-help" class="mu">${onAirNameHelp}</p>`:''}<input type="hidden" name="account_type" value="${esc(type)}">` : ''}<label>Email</label><input name="email" type="email" autocomplete="email" required><label>Password</label><input name="password" type="password" minlength="8" autocomplete="${signup?'new-password':'current-password'}" required><div id="form-error"></div><button class="btn p" type="submit">${signup?'Sign up':'Log in'}</button>${signup ? '<p class="mu">We’ll email you a confirmation link before your first sign in.</p>' : '<p class="mu"><a href="#/reset">Forgot your password?</a></p>'}</form>${socialSignInEnabled?oauthButtons():''}</section>`;
+  return `<section class="card auth-card"><h2>${signup ? `Register as ${type}` : 'Log in'}</h2><div class="auth-email-label">${signup?'Register with email':'Use your email and password'}</div><form id="auth-form">${signup ? `<label for="signup-username">Username</label><input id="signup-username" name="username" minlength="3" maxlength="24" pattern="${usernamePattern}" aria-describedby="username-help" required autocomplete="username"><p id="username-help" class="mu">${usernameHelp} Usernames are unique.</p><label for="signup-display-name">${type === 'host' ? 'Organisation name' : 'On-air name (your nickname)'}</label><input id="signup-display-name" name="display_name" required maxlength="${type==='talent'?16:100}" ${type==='talent'?`pattern="${onAirNamePattern}" aria-describedby="on-air-name-help"`:''} autocomplete="name">${type==='talent'?`<p id="on-air-name-help" class="mu">${onAirNameHelp}</p>`:''}<input type="hidden" name="account_type" value="${esc(type)}">` : ''}<label>Email</label><input name="email" type="email" autocomplete="email" required><label>Password</label><input name="password" type="password" minlength="8" autocomplete="${signup?'new-password':'current-password'}" required><div id="form-error"></div><button class="btn p" type="submit">${signup?'Sign up':'Log in'}</button>${signup ? '<p class="mu">We’ll email you a confirmation link before your first sign in.</p>' : '<p class="mu"><a href="#/reset">Forgot your password?</a></p>'}</form>${socialSignInEnabled?oauthButtons():''}</section>`;
 }
 function jobCard(job) {
   const cover=job.cover_path?supabase.storage.from('tourit-job-covers').getPublicUrl(job.cover_path).data.publicUrl:'';
@@ -419,10 +430,10 @@ async function talentPage() {
   availabilityMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1);
   const data = await read(supabase.from('talent_profiles').select('user_id,role,games,languages,location,region,experience_years,work_mode,brief,bio,portfolio_url').eq('published',true).limit(80));
   const ids = data.map(t=>t.user_id);
-  const names = ids.length ? await read(supabase.from('profiles').select('id,display_name').in('id',ids)) : [];
-  const byId = Object.fromEntries(names.map(n=>[n.id,n.display_name]));
+  const names = ids.length ? await read(supabase.from('profiles').select('id,display_name,username').in('id',ids)) : [];
+  const byId = Object.fromEntries(names.map(n=>[n.id,{display_name:n.display_name,username:n.username}]));
   const term = filters.q.trim().toLowerCase();
-  const people = data.filter(t=>(!filters.game || t.games.includes(filters.game))&&(!filters.role||t.role===filters.role)&&(!term||`${byId[t.user_id]} ${t.brief} ${t.bio} ${t.games.join(' ')}`.toLowerCase().includes(term)));
+  const people = data.filter(t=>(!filters.game || t.games.includes(filters.game))&&(!filters.role||t.role===filters.role)&&(!term||`${byId[t.user_id]?.display_name} ${byId[t.user_id]?.username} ${t.brief} ${t.bio} ${t.games.join(' ')}`.toLowerCase().includes(term)));
   const range=calendarRange(availabilityMonth);
   const availabilityMonthLabel=availabilityMonth.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
   const availabilityRows=people.length?await read(supabase.from('talent_availability').select('user_id,available_on,is_available').in('user_id',people.map(t=>t.user_id)).gte('available_on',range.start).lte('available_on',range.end)):[];
@@ -431,8 +442,10 @@ async function talentPage() {
   const cards=people.map(t=>{
     const availability=availabilitySummary(availabilityByTalent.get(t.user_id)||[],availabilityMonth);
     const indicatorTone=availability.tone==='g'?'is-available':'is-limited';
-    const initials=(byId[t.user_id]||'?').split(' ').map(x=>x[0]).join('').slice(0,2);
-    return `<article class="card tc"><span class="availability-indicator ${indicatorTone}" role="img" aria-label="Availability: ${availability.label}; ${availability.availableDays} of ${availability.daysInMonth} days marked this month"><span class="availability-orb" aria-hidden="true"></span><span class="availability-label">${availability.available?'Available':'Limited'}</span></span><div class="row talent-card-heading"><div class="av">${esc(initials)}</div><div><b>${esc(byId[t.user_id])}</b><div class="mu">${esc(t.role)} · ${esc(t.location)}</div></div></div><div class="row talent-card-tags">${t.games.map(g=>`<span class="tag y">${esc(g)}</span>`).join('')}</div><p class="pv">${esc(t.brief||t.bio)}</p><span class="mu">${t.experience_years} years · ${esc(t.work_mode)}</span><div class="row"><a class="btn s p" href="#/talent/${t.user_id}">View profile</a>${session&&profile?.account_type==='host'?`<button class="btn s" data-action="shortlist" data-id="${t.user_id}"><span class="ui-icon" aria-hidden="true">☆</span> Shortlist</button><button class="btn s" data-action="message" data-id="${t.user_id}">Message</button>`:''}</div></article>`;
+    const talentName=byId[t.user_id]?.display_name||'?';
+    const initials=talentName.split(' ').map(x=>x[0]).join('').slice(0,2);
+    const username=byId[t.user_id]?.username;
+    return `<article class="card tc"><span class="availability-indicator ${indicatorTone}" role="img" aria-label="Availability: ${availability.label}; ${availability.availableDays} of ${availability.daysInMonth} days marked this month"><span class="availability-orb" aria-hidden="true"></span><span class="availability-label">${availability.available?'Available':'Limited'}</span></span><div class="row talent-card-heading"><div class="av">${esc(initials)}</div><div><b>${esc(talentName)}</b><div class="mu">${username?`@${esc(username)} · `:''}${esc(t.role)} · ${esc(t.location)}</div></div></div><div class="row talent-card-tags">${t.games.map(g=>`<span class="tag y">${esc(g)}</span>`).join('')}</div><p class="pv">${esc(t.brief||t.bio)}</p><span class="mu">${t.experience_years} years · ${esc(t.work_mode)}</span><div class="row"><a class="btn s p" href="#/talent/${t.user_id}">View profile</a>${session&&profile?.account_type==='host'?`<button class="btn s" data-action="shortlist" data-id="${t.user_id}"><span class="ui-icon" aria-hidden="true">☆</span> Shortlist</button><button class="btn s" data-action="message" data-id="${t.user_id}">Message</button>`:''}</div></article>`;
   }).join('');
   shell(`<div class="talent-page"><h2>Find Talent</h2><p class="mu talent-availability-period">Availability for ${esc(availabilityMonthLabel)} · “Available” means at least 70% of the month’s dates are marked.</p><div class="filters talent-filters"><label class="talent-filter talent-search-field"><span>SEARCH</span><input id="search" class="talent-search" placeholder="Search name, game, keyword" value="${esc(filters.q)}"></label>${talentFilterDropdown('filter-game','GAME',games,filters.game,'All games')}${talentFilterDropdown('filter-role','ROLE',roles,filters.role,'All roles')}</div><div class="grid">${cards||'<p class="mu">No published talent profiles match these filters.</p>'}</div></div>`);
 }
@@ -540,7 +553,9 @@ async function render() {
   const params = new URLSearchParams(query);
   try {
     if(session && profile && !profile.account_type && path!=='oauth-onboarding') return shell(oauthOnboardingPage());
+    if(session && profile?.account_type==='talent' && !profile.username && path!=='username-setup') return go('username-setup');
     if(path==='oauth-onboarding') return session ? shell(oauthOnboardingPage()) : shell(authPage(false));
+    if(path==='username-setup') return session&&profile?.account_type==='talent'&&!profile.username ? shell(usernameSetupPage()) : session ? go('dash') : shell(authPage(false));
     if(path==='login') return shell(authPage(params.has('signup'),params.get('type')||''));
     if(path==='reset') return shell(`<form class="card" id="reset-form" style="max-width:420px;margin:auto"><h2>Reset password</h2><label>Email</label><input name="email" type="email" required><button class="btn p">Send reset link</button></form>`);
     if(path==='jobs') return await jobsPage();
@@ -551,13 +566,13 @@ async function render() {
     if(path==='legal') return shell(legalPage());
     if(path==='talent' && id) {
       const t=await read(supabase.from('talent_profiles').select('*').eq('user_id',id).single());
-      const p=await read(supabase.from('profiles').select('display_name,avatar_path').eq('id',id).single());
+      const p=await read(supabase.from('profiles').select('display_name,username,avatar_path').eq('id',id).single());
       const range=calendarRange(availabilityMonth);const avail=await read(supabase.from('talent_availability').select('available_on,is_available').eq('user_id',id).gte('available_on',range.start).lte('available_on',range.end));
       const availabilityStatus=availabilitySummary(avail,availabilityMonth);
       const avatar=p.avatar_path?supabase.storage.from('tourit-avatars').getPublicUrl(p.avatar_path).data.publicUrl:'';
       const ownPrivatePreview=session?.user?.id===id&&!t.published;
       const portfolioUrl=safeExternalUrl(t.portfolio_url);
-      return shell(`${ownPrivatePreview?'<div class="profile-preview-notice"><span><b>Private profile preview</b><small>Only you can see this profile until you publish it.</small></span><a class="btn s" href="#/dash">Edit profile</a></div>':''}<div class="two"><div class="card"><div class="row">${avatar?`<img class="av" style="object-fit:cover" alt="" src="${esc(avatar)}">`:''}<div><h2>${esc(p.display_name)}</h2><div class="mu">${esc(t.role)} · ${esc(t.location)}</div></div></div><p>${esc(t.brief)}</p><p>${esc(t.bio)}</p><div class="row">${t.games.map(g=>`<span class="tag y">${esc(g)}</span>`).join('')}</div><div class="bx"><small>Languages</small>${esc(t.languages.join(', '))}</div><div class="bx"><small>Experience</small>${t.experience_years} years · ${esc(t.work_mode)}</div>${t.past_events?.length?`<div class="bx"><small>Past events</small><div class="row">${t.past_events.map(event=>`<span class="tag">${esc(event)}</span>`).join('')}</div></div>`:''}${portfolioUrl?`<a class="btn s" target="_blank" rel="noopener noreferrer" href="${esc(portfolioUrl)}">Demo reel / portfolio ↗</a>`:''}${session&&profile?.account_type==='host'?`<button class="btn s" data-action="shortlist" data-id="${id}"><span class="ui-icon" aria-hidden="true">☆</span> Shortlist</button><button class="btn s p" data-action="message" data-id="${id}">Contact</button>`:''}</div><section class="card"><div class="availability-title"><b>Availability</b><span class="tag ${availabilityStatus.tone}">${availabilityStatus.label}</span></div>${availabilityCalendar(id,avail,false)}</section></div>`);
+      return shell(`${ownPrivatePreview?'<div class="profile-preview-notice"><span><b>Private profile preview</b><small>Only you can see this profile until you publish it.</small></span><a class="btn s" href="#/dash">Edit profile</a></div>':''}<div class="two"><div class="card"><div class="row">${avatar?`<img class="av" style="object-fit:cover" alt="" src="${esc(avatar)}">`:''}<div><h2>${esc(p.display_name)}</h2><div class="mu">${p.username?`@${esc(p.username)} · `:''}${esc(t.role)} · ${esc(t.location)}</div></div></div><p>${esc(t.brief)}</p><p>${esc(t.bio)}</p><div class="row">${t.games.map(g=>`<span class="tag y">${esc(g)}</span>`).join('')}</div><div class="bx"><small>Languages</small>${esc(t.languages.join(', '))}</div><div class="bx"><small>Experience</small>${t.experience_years} years · ${esc(t.work_mode)}</div>${t.past_events?.length?`<div class="bx"><small>Past events</small><div class="row">${t.past_events.map(event=>`<span class="tag">${esc(event)}</span>`).join('')}</div></div>`:''}${portfolioUrl?`<a class="btn s" target="_blank" rel="noopener noreferrer" href="${esc(portfolioUrl)}">Demo reel / portfolio ↗</a>`:''}${session&&profile?.account_type==='host'?`<button class="btn s" data-action="shortlist" data-id="${id}"><span class="ui-icon" aria-hidden="true">☆</span> Shortlist</button><button class="btn s p" data-action="message" data-id="${id}">Contact</button>`:''}</div><section class="card"><div class="availability-title"><b>Availability</b><span class="tag ${availabilityStatus.tone}">${availabilityStatus.label}</span></div>${availabilityCalendar(id,avail,false)}</section></div>`);
     }
     if(path==='talent') return await talentPage();
     if(path==='job' && id) return await jobPage(id);
@@ -581,24 +596,35 @@ document.addEventListener('submit', async event => {
     if(form.id==='auth-form') {
       if(data.account_type) {
         const displayName=data.display_name.trim();
+        const username=normalizedUsername(data.username);
+        if(!usernameRegex.test(username)) throw new Error(usernameHelp);
         if(data.account_type==='talent'&&!onAirNameRegex.test(displayName)) throw new Error(onAirNameHelp);
         try { localStorage.setItem(signupIntentKey,String(Date.now())); } catch {}
         const callback=new URL(authRedirectUrl,location.origin);callback.searchParams.set('tourit_auth','signup');
-        const {error} = await supabase.auth.signUp({email:data.email,password:data.password,options:{data:{display_name:displayName,account_type:data.account_type},emailRedirectTo:callback.href}});
-        if(error) throw error;
+        const {error} = await supabase.auth.signUp({email:data.email.trim().toLowerCase(),password:data.password,options:{data:{display_name:displayName,username,account_type:data.account_type},emailRedirectTo:callback.href}});
+        if(error) throw new Error(authErrorMessage(error));
         toast('Check your email to confirm your account');
       } else {
-        const {error} = await supabase.auth.signInWithPassword({email:data.email,password:data.password});
+        const {error} = await supabase.auth.signInWithPassword({email:data.email.trim().toLowerCase(),password:data.password});
         if(error) throw error;
         go('dash');
       }
     } else if(form.id==='oauth-onboarding-form') {
       const displayName=data.display_name.trim();
+      const username=normalizedUsername(data.username);
+      if(!usernameRegex.test(username)) throw new Error(usernameHelp);
       if(data.account_type==='talent'&&!onAirNameRegex.test(displayName)) throw new Error(onAirNameHelp);
-      const {error}=await supabase.rpc('complete_oauth_onboarding',{p_account_type:data.account_type,p_display_name:displayName});
-      if(error) throw error;
+      const {error}=await supabase.rpc('complete_oauth_onboarding',{p_account_type:data.account_type,p_display_name:displayName,p_username:username});
+      if(error) throw new Error(authErrorMessage(error));
       sessionStorage.removeItem('tourit-oauth-account-type');
       toast('Tourit account ready');
+      await refreshSession();
+      go('dash');
+    } else if(form.id==='username-setup-form') {
+      const username=normalizedUsername(data.username);
+      if(!usernameRegex.test(username)) throw new Error(usernameHelp);
+      const {error}=await supabase.from('profiles').update({username}).eq('id',userId());
+      if(error) throw new Error(authErrorMessage(error));
       await refreshSession();
       go('dash');
     } else if(form.id==='reset-form') {
@@ -638,7 +664,7 @@ document.addEventListener('submit', async event => {
       if(error) throw error;
       go(`inbox?c=${conversationId}`);
     }
-  } catch(error) { if(errorNode) errorNode.innerHTML=errorBox(error.message); else toast(error.message); }
+  } catch(error) { const usernameFlow=['auth-form','oauth-onboarding-form','username-setup-form'].includes(form.id);const message=usernameFlow?authErrorMessage(error):error.message;if(errorNode) errorNode.innerHTML=errorBox(message);else toast(message); }
 });
 
 document.addEventListener('input',event=>{ if(event.target.id==='search'){filters.q=event.target.value; const wasFocused=document.activeElement===event.target; const cursor=event.target.selectionStart; clearTimeout(window._searchTimer); window._searchTimer=setTimeout(async()=>{await render();if(wasFocused){const input=document.querySelector('#search');input?.focus();input?.setSelectionRange(cursor,cursor);}},250);} });
@@ -736,7 +762,7 @@ async function refreshSession() {
   session=current;
   profile=null;
   if(session) {
-    const {data,error}=await supabase.from('profiles').select('id,display_name,account_type').eq('id',session.user.id).maybeSingle();
+    const {data,error}=await supabase.from('profiles').select('id,display_name,account_type,username').eq('id',session.user.id).maybeSingle();
     if(error) console.error(error); else profile=data;
   }
   if(profile?.account_type) sessionStorage.removeItem('tourit-oauth-account-type');
