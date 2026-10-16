@@ -4,6 +4,15 @@ Repository changes are recorded here as they are made. Entries describe source a
 
 ## 2026-10-16
 
+### Availability calendar polish
+
+- Softened the availability markers and date styling; explicit unavailable dates now use a muted gray treatment without a shadow pulse.
+- Added a slim vertical marker to today and locked editing of past dates in the profile availability calendar.
+- Moved today's marker into the gap before the date square and added a hover/focus “Today” hint.
+- Replaced the vertical marker with a white outline around today's date; kept the “Today” hover/focus hint.
+- Reduced today's outline to a subtle, translucent highlight.
+- User approved publishing these calendar changes on 2026-10-16.
+
 ### Availability calendar and talent status
 
 - Added animated month transitions and date-selection feedback to the availability calendar, respecting reduced-motion preferences.
