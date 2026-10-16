@@ -12,9 +12,11 @@ Major current routes include home, jobs/job details, talent search/profile, dash
 
 ## Release report and documentation state
 
-The sole release report, `TOURIT-RELEASE-REPORT.md`, is dated 15 October 2026. It records a successful production build and an incomplete Vercel upload; the live domain was said to remain on its previous deployment. It says migrations 003, 004, 005, 006 and 007 and the purge function deployment were user-reported, not independently checked. Social provider buttons were intentionally disabled pending provider configuration. Production analytics, auth redirects, production mail, legal review, and live end-to-end testing were still outstanding.
+`TOURIT-RELEASE-REPORT.md` is a historical report dated 15 October 2026. Its deployment notes predate the current Vercel inspection and should not be treated as current status. `CHANGELOG.md` is the ongoing record of repository changes. The contradictory `SETUP.md` was removed on 16 October 2026; use this handoff for current status and the release report only for historical context.
 
-`SETUP.md` is a more current feature/setup guide in parts, but it contradicts the release report on migration state: it says 005 and 007 still need action, while the release report says they were reportedly applied. Neither document verifies the live Supabase state. `SETUP.md` also says About, Contact, legal pages and availability-calendar work remain; Contact/legal pages exist in the current UI, while the calendar and private application attachments do not. The report describes prior design/product work and must not be read as proof that each described capability is currently deployed.
+On 16 October 2026, the Vercel dashboard was inspected read-only. The `tourit` project exists in the `tourit1` team. Its production deployment is **Ready**, served at `cooperqsa.com` and `tourit-mauve.vercel.app`, and was created from a **Vercel Drop** two days earlier. A separate GitHub preview for `codex/platform-flow-integrations` is also **Ready**. Vercel still offers **Connect Git Repository** in the production checklist, so the production project is not configured for automatic deployments from GitHub. Connecting it requires the user to authorize repository access in Vercel. The live `cooperqsa.com` home page was opened and displayed the Tourit site.
+
+Migration and release claims in the historical report are not a substitute for checking hosted state. Migration 008 was reported as applied by the user and publication/RPC state was previously checked read-only; do not rerun migrations.
 
 ## Cleanup performed
 
@@ -24,10 +26,11 @@ No migrations, auth/security code, assets, configuration, release documentation,
 
 ## Validation
 
-- `node node_modules/vite/bin/vite.js build` passed before cleanup. Run it again after the cleanup before the next session; the project defines no test or lint scripts.
-- No browser-based flows or live Supabase checks were performed during this audit. Production auth, RLS behavior against the hosted project, storage permissions, force deletion, and scheduled cleanup therefore remain unverified here.
+- `vite build` passed on 16 October after the availability changes. No test or lint scripts are defined.
+- The live Vercel home page and deployment status were checked read-only. The test talent account had 31 available dates saved for October 2026; no database records were changed.
+- Signup, role-based end-to-end flows, hosted RLS behavior, storage permissions, force deletion, and scheduled cleanup have not been tested in this session.
 - No release archive was regenerated. The checked-in/ignored archives may not match current source.
-- Git has no commits or configured remote, and all project files visible to Git are untracked. Preserve the existing workspace carefully; do not assume a clean baseline or use Git resets/checkout to recover files.
+- The project is on Git branch `codex/platform-flow-integrations`, pushed to `origin`. Do not assume the production Vercel project deploys from this branch; Git integration is not configured there.
 - `.env.local` exists but was not inspected or modified. It is excluded from Git by `.gitignore`.
 
 ## Outstanding issues by priority
@@ -38,15 +41,14 @@ No migrations, auth/security code, assets, configuration, release documentation,
 
 ### HIGH
 
-- Confirm hosted Supabase migration state before launch. The report's migration status is user-reported and conflicts with `SETUP.md`; do not blindly rerun migrations.
+- Confirm hosted Supabase migration state before launch; do not blindly rerun migrations.
 - Confirm production auth Site URL/redirect allowlist and SMTP/email confirmation behavior. The release report says these still need verification.
 - Finish and review operator identity, jurisdiction, retention, and other legal disclosures. Current Terms and Privacy pages label themselves drafts and explicitly require operator review.
-- Build and test missing core flows: availability calendar, private application attachments, notification display, and live/realtime inbox refresh. Notifications are generated in the database but not displayed; inbox messages refresh on navigation/open.
 - Perform separate talent/host account tests for signup, profile privacy, job create/edit/crop, applications, messaging, deletion recovery/force delete, and mobile layouts before public signups.
 
 ### MEDIUM
 
-- Reconcile `SETUP.md` and the release report into one verified deployment/migration checklist; deployment status and archive freshness are not established by this workspace audit.
+- Connect the existing Vercel project to GitHub after authorizing repository access; configure and verify its production branch and automatic deployments.
 - There are no test, lint, or type-check scripts. Add coverage as part of a planned quality task, especially for auth redirects, role-based access, and job deletion.
 - OAuth providers remain hidden behind `socialSignInEnabled = false`; enable only after each provider is configured and tested.
 - Review the Supabase security model in a live project. The migrations use RLS, restricted column grants, private participant checks, and service-role-only hard deletion, but static inspection cannot prove the hosted policies match these files.
@@ -58,11 +60,10 @@ No migrations, auth/security code, assets, configuration, release documentation,
 
 ## Recommended next steps
 
-1. Establish a recoverable Git baseline (commit or otherwise archive the current untracked source) before larger edits.
-2. Verify migration/function deployment state using read-only dashboard checks, then update `SETUP.md` and the release report to agree.
-3. Decide production domain/host settings; configure Supabase auth redirects and production email, then verify signup and confirmation flows.
-4. Complete the missing private attachments, availability, notification, and inbox refresh work in dependency order, with role-based tests.
-5. Review legal disclosures and verify production behavior using separate talent and host accounts before public launch.
+1. Connect the existing Vercel `tourit` project to the GitHub repository after authorizing repository access, then configure/verify its production branch and automatic deployments.
+2. Verify migration/function deployment state using read-only dashboard checks. Configure Supabase auth redirects and production email, then verify signup and confirmation flows.
+3. Perform separate talent/host account tests for signup, profile privacy, job create/edit/crop, applications, messaging, deletion recovery/force delete, and mobile layouts.
+4. Review legal disclosures and verify production behavior before public signups.
 
 ## Session readiness
 
