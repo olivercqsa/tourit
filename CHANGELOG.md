@@ -4,6 +4,26 @@ Repository changes are recorded here as they are made. Entries describe source a
 
 ## 2026-10-16
 
+### Notification controls
+
+- Added a page-level “Mark all as read” action and a delete button on each notification card.
+- Added a “Delete all” action with a warning confirmation that explains it clears every notification, including missed ones, and cannot be undone.
+- Added responsive notification action styling and refresh the unread badge after either action.
+- Added migration `supabase/migrations/20261016211408_notification_owner_delete.sql` to allow authenticated users to delete only their own notifications. Applied it to the connected Supabase database and verified the owner-only RLS policy and authenticated DELETE grant.
+
+### Messaging rate limit and notification details
+
+- Added a server-enforced rolling limit of 10 sent messages per account per minute, with per-sender serialization to avoid concurrent requests bypassing the count.
+- Added unread notification counts beside the Notifications navigation link and refresh them when notifications arrive or are marked read.
+- Message notifications now say “New message from [name]”; existing generic message notifications are backfilled where a matching message remains.
+- Added migration `supabase/migrations/20261016210829_messaging_rate_limit_and_notification_senders.sql`; it was applied to the connected Supabase database and its trigger, functions, and index were verified.
+
+### Talent search profile photos
+
+- Fixed Find Talent cards showing initials instead of uploaded profile photos by including `avatar_path` in the public profile lookup and rendering the public avatar image.
+- Keep initials visible when a profile has no photo or an image URL fails to load.
+- Removed the availability month and 70% threshold explanation from the Find Talent header.
+
 ### Mobile navigation
 
 - Replaced the crowded mobile header links with a menu icon that opens the existing navigation options in an animated popout.
