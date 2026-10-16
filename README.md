@@ -23,4 +23,4 @@ See [DEVELOPMENT-HANDOFF.md](DEVELOPMENT-HANDOFF.md) for the current project sta
 
 ## Current release readiness
 
-The live Vercel site is available at `https://cooperqsa.com`, but its production deployment is currently a manual Vercel Drop rather than an automatic Git deployment. Production auth settings, hosted migration state, legal disclosures, and multi-user flows still require confirmation. See [DEVELOPMENT-HANDOFF.md](DEVELOPMENT-HANDOFF.md) for current status and follow-up work.
+The live Vercel site is available at `https://cooperqsa.com`. The Vercel `tourit` project is connected to this GitHub repository and uses `main` as its production branch. Production auth settings, hosted migration state, legal disclosures, and multi-user flows still require confirmation. See [DEVELOPMENT-HANDOFF.md](DEVELOPMENT-HANDOFF.md) for current status and follow-up work.

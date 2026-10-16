@@ -23,12 +23,13 @@ Repository changes are recorded here as they are made. Entries describe source a
 
 - Removed the outdated and internally contradictory `SETUP.md`; updated links and current project handoff notes.
 - Added this changelog and summarized earlier work from the historical release report.
-- Inspected the Vercel dashboard: project `tourit` has a **Ready** production deployment from a Vercel Drop at `cooperqsa.com` and `tourit-mauve.vercel.app`; the live home page responded with Tourit. A GitHub preview for `codex/platform-flow-integrations` is also **Ready**. The production project still offers **Connect Git Repository**, so automatic production deploys from GitHub are not configured. No Vercel settings were changed and no deployment was made.
+- Inspected the Vercel dashboard: project `tourit` is connected to `olivercqsa/tourit`; its `codex/platform-flow-integrations` preview is **Ready**. The live production deployment at `cooperqsa.com` and `tourit-mauve.vercel.app` was **Ready** from a Vercel Drop, and Vercel identifies `main` as its production branch. The live home page responded with Tourit. The repository connection already existed when checked, so no additional Vercel setting needed changing.
 
 ### Validation and publishing
 
 - `vite build` passed after the availability changes.
 - Pushed source changes through commit `1b23320` to `codex/platform-flow-integrations` on GitHub. This did not deploy the live site.
+- The user asked to push the changes live. The connected Vercel project deploys production from `main`; the feature branch is prepared for promotion. Record the deployment result here after Vercel reports it.
 
 ### Earlier project work (historical summary)
 

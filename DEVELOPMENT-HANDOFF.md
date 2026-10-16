@@ -14,7 +14,7 @@ Major current routes include home, jobs/job details, talent search/profile, dash
 
 `TOURIT-RELEASE-REPORT.md` is a historical report dated 15 October 2026. Its deployment notes predate the current Vercel inspection and should not be treated as current status. `CHANGELOG.md` is the ongoing record of repository changes. The contradictory `SETUP.md` was removed on 16 October 2026; use this handoff for current status and the release report only for historical context.
 
-On 16 October 2026, the Vercel dashboard was inspected read-only. The `tourit` project exists in the `tourit1` team. Its production deployment is **Ready**, served at `cooperqsa.com` and `tourit-mauve.vercel.app`, and was created from a **Vercel Drop** two days earlier. A separate GitHub preview for `codex/platform-flow-integrations` is also **Ready**. Vercel still offers **Connect Git Repository** in the production checklist, so the production project is not configured for automatic deployments from GitHub. Connecting it requires the user to authorize repository access in Vercel. The live `cooperqsa.com` home page was opened and displayed the Tourit site.
+On 16 October 2026, the Vercel dashboard showed the `tourit` project in team `tourit1`, connected to GitHub repository `olivercqsa/tourit`. The `codex/platform-flow-integrations` preview deployment was **Ready**. The current production deployment at `cooperqsa.com` and `tourit-mauve.vercel.app` was **Ready** but came from a **Vercel Drop**. Vercel identifies `main` as the production branch. The live `cooperqsa.com` home page was opened and displayed Tourit. Repository access was already connected when checked, so no additional connection change was needed.
 
 Migration and release claims in the historical report are not a substitute for checking hosted state. Migration 008 was reported as applied by the user and publication/RPC state was previously checked read-only; do not rerun migrations.
 
@@ -30,7 +30,7 @@ No migrations, auth/security code, assets, configuration, release documentation,
 - The live Vercel home page and deployment status were checked read-only. The test talent account had 31 available dates saved for October 2026; no database records were changed.
 - Signup, role-based end-to-end flows, hosted RLS behavior, storage permissions, force deletion, and scheduled cleanup have not been tested in this session.
 - No release archive was regenerated. The checked-in/ignored archives may not match current source.
-- The project is on Git branch `codex/platform-flow-integrations`, pushed to `origin`. Do not assume the production Vercel project deploys from this branch; Git integration is not configured there.
+- The project is on Git branch `codex/platform-flow-integrations`, pushed to `origin`. Vercel is connected to the repository, but production deploys from `main`.
 - `.env.local` exists but was not inspected or modified. It is excluded from Git by `.gitignore`.
 
 ## Outstanding issues by priority
@@ -48,7 +48,7 @@ No migrations, auth/security code, assets, configuration, release documentation,
 
 ### MEDIUM
 
-- Connect the existing Vercel project to GitHub after authorizing repository access; configure and verify its production branch and automatic deployments.
+- Verify that Vercel's automatic production deployment from `main` completes successfully.
 - There are no test, lint, or type-check scripts. Add coverage as part of a planned quality task, especially for auth redirects, role-based access, and job deletion.
 - OAuth providers remain hidden behind `socialSignInEnabled = false`; enable only after each provider is configured and tested.
 - Review the Supabase security model in a live project. The migrations use RLS, restricted column grants, private participant checks, and service-role-only hard deletion, but static inspection cannot prove the hosted policies match these files.
@@ -60,7 +60,7 @@ No migrations, auth/security code, assets, configuration, release documentation,
 
 ## Recommended next steps
 
-1. Connect the existing Vercel `tourit` project to the GitHub repository after authorizing repository access, then configure/verify its production branch and automatic deployments.
+1. Verify that Vercel automatically deploys changes pushed to the `main` production branch.
 2. Verify migration/function deployment state using read-only dashboard checks. Configure Supabase auth redirects and production email, then verify signup and confirmation flows.
 3. Perform separate talent/host account tests for signup, profile privacy, job create/edit/crop, applications, messaging, deletion recovery/force delete, and mobile layouts.
 4. Review legal disclosures and verify production behavior before public signups.
